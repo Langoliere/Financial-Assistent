@@ -1,0 +1,18 @@
+# ML rules
+
+- This project predicts the direction of the next trading day.
+- Target: 1 if next-day close is higher than current close, otherwise 0.
+- Target formula: target[t] = int(close[t + 1] > close[t]).
+- Never use future information in features.
+- Never use shift(-1) in feature engineering.
+- Never use future close values as features.
+- Use chronological train/validation/test splits.
+- Never use random shuffling for time-series splitting.
+- Fit scalers, encoders, imputers, and other transformers only on train data.
+- Save all fitted transformers with the model.
+- Save the feature order in feature_schema.json.
+- Save model metadata in metadata.json.
+- Store model artifacts in artifacts/direction_model/.
+- API must load pre-trained artifacts; it must not retrain models.
+- Do not create fake model artifacts.
+- If model artifacts are missing, create a training script and explain how to run it.

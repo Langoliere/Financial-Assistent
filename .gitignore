@@ -1,0 +1,71 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Виртуальные окружения
+venv/
+env/
+ENV/
+.venv
+
+# Настройки IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Результаты тестирования
+.pytest_cache/
+.coverage
+htmlcov/
+*.cover
+.hypothesis/
+
+# Кэш Ruff
+.ruff_cache/
+
+# Артефакты Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Файлы данных большого размера
+data/
+*.csv
+*.parquet
+
+# Артефакты моделей большого размера
+artifacts/
+mlruns/
+*.keras
+*.h5
+*.pkl
+*.joblib
+
+# Переменные окружения
+.env
+
+# Логи
+*.log
+
+# Системные файлы
+Thumbs.db

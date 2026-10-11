@@ -1,0 +1,36 @@
+services:
+  investbot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: investbot-api
+    ports:
+      - "8000:8000"
+    volumes:
+      # Подключаем каталог исторических OHLCV-данных
+      - ./data:/app/data
+      # Подключаем локальные артефакты как резервный источник модели
+      - ./artifacts:/app/artifacts:ro
+      # Подключаем локальное файловое хранилище MLflow только для чтения
+      - ./mlruns:/app/mlruns:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI:-}
+      - MLFLOW_MODEL_NAME=${MLFLOW_MODEL_NAME:-sber_direction_lstm}
+      - MLFLOW_MODEL_ALIAS=${MLFLOW_MODEL_ALIAS:-champion}
+      - MLFLOW_RUN_ID=${MLFLOW_RUN_ID:-}
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-http://localhost:8000}
+      - TRUSTED_HOSTS=${TRUSTED_HOSTS:-localhost,127.0.0.1}
+      - INVESTBOT_API_KEY=${INVESTBOT_API_KEY:-}
+      - MAX_REQUEST_BODY_BYTES=${MAX_REQUEST_BODY_BYTES:-262144}
+      - PREDICTION_RATE_LIMIT_PER_MINUTE=${PREDICTION_RATE_LIMIT_PER_MINUTE:-30}
+      - MAX_MARKET_DATA_AGE_DAYS=${MAX_MARKET_DATA_AGE_DAYS:-7}
+      - MAX_DATA_DRIFT_SCORE=${MAX_DATA_DRIFT_SCORE:-5.0}
+      - BLOCK_ON_DATA_DRIFT=${BLOCK_ON_DATA_DRIFT:-false}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/ready"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

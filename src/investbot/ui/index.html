@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sberbank Direction Predictor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .button {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+
+        .button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .result.up {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+        }
+
+        .result.down {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+        }
+
+        .result h2 {
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+
+        .result.up h2 {
+            color: #155724;
+        }
+
+        .result.down h2 {
+            color: #721c24;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            font-size: 14px;
+        }
+
+        .result-label {
+            color: #666;
+        }
+
+        .result-value {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .error {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+            color: #721c24;
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            display: none;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sberbank Direction Predictor</h1>
+        <p class="subtitle">Прогноз направления цены на следующий торговый день</p>
+
+        <button class="button" id="predictBtn" onclick="getPrediction()">
+            Получить предсказание
+        </button>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Загрузка...</p>
+        </div>
+
+        <div class="result" id="result">
+            <h2 id="directionTitle">UP</h2>
+            <div class="result-row">
+                <span class="result-label">Вероятность роста:</span>
+                <span class="result-value" id="probability">64%</span>
+            </div>
+            <div class="result-row">
+                <span class="result-label">Порог:</span>
+                <span class="result-value" id="threshold">0.5</span>
+            </div>
+            <div class="result-row">
+                <span class="result-label">Дата данных:</span>
+                <span class="result-value" id="asOf">2026-10-07</span>
+            </div>
+            <div class="result-row">
+                <span class="result-label">Версия модели:</span>
+                <span class="result-value" id="modelVersion">v1.0.0</span>
+            </div>
+        </div>
+
+        <div class="error" id="error">
+            <p id="errorMessage">Ошибка</p>
+        </div>
+    </div>
+
+    <script>
+        async function getPrediction() {
+            const button = document.getElementById('predictBtn');
+            const loading = document.getElementById('loading');
+            const result = document.getElementById('result');
+            const error = document.getElementById('error');
+
+            // Сбрасываем состояние интерфейса
+            result.style.display = 'none';
+            error.style.display = 'none';
+            button.disabled = true;
+            loading.style.display = 'block';
+
+            try {
+                const response = await fetch('/api/ui/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Показываем результат
+                    const direction = data.direction === 'up' ? 'UP' : 'DOWN';
+                    const directionClass = data.direction === 'up' ? 'up' : 'down';
+
+                    document.getElementById('directionTitle').textContent = direction;
+                    document.getElementById('probability').textContent = (data.probability_up * 100).toFixed(1) + '%';
+                    document.getElementById('threshold').textContent = data.threshold.toFixed(2);
+                    document.getElementById('asOf').textContent = data.as_of;
+                    document.getElementById('modelVersion').textContent = data.model_version;
+
+                    result.className = 'result ' + directionClass;
+                    result.style.display = 'block';
+                } else {
+                    // Показываем ошибку
+                    document.getElementById('errorMessage').textContent = data.detail || 'Ошибка получения предсказания';
+                    error.style.display = 'block';
+                }
+            } catch (err) {
+                // Показываем ошибку
+                document.getElementById('errorMessage').textContent = 'Ошибка соединения с сервером';
+                error.style.display = 'block';
+            } finally {
+                button.disabled = false;
+                loading.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

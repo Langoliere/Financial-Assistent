@@ -1,0 +1,21 @@
+# Project rules
+
+- Python 3.12.
+- Use src layout.
+- Package name: investbot.
+- Use pyproject.toml for dependencies and project metadata.
+- Use uv for dependency management if available; otherwise use pip.
+- Use FastAPI, Pydantic v2, pandas, numpy, scikit-learn, TensorFlow/Keras.
+- Use pytest for tests.
+- Use ruff for linting.
+- Use Docker and docker-compose for local deployment.
+- Keep notebooks in notebooks/.
+- Keep production code in src/investbot/.
+- Keep tests in tests/.
+- Keep trained model artifacts in artifacts/.
+- Do not modify notebooks/InvestBot_Price.ipynb.
+- Do not put datasets, secrets, API keys, or large binary files in Git.
+- Use .env.example for configuration examples; never commit .env.
+- Before finishing a task, run:
+  - pytest -q
+  - ruff check
